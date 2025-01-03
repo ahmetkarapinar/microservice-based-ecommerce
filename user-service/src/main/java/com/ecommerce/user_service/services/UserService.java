@@ -1,31 +1,25 @@
 package com.ecommerce.user_service.services;
 
-import com.ecommerce.user_service.entities.Role;
 import com.ecommerce.user_service.entities.User;
 import com.ecommerce.user_service.repositories.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        System.out.println(user.getRole());
-        //user.setRole(Role.CUSTOMER); // Default role
-        return userRepository.save(user);
-    }
+    public List<User> allUsers() {
+        List<User> users = new ArrayList<>();
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        userRepository.findAll().forEach(users::add);
+
+        return users;
     }
 }

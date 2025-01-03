@@ -26,11 +26,10 @@ public class User implements UserDetails {
     private String fullName;
 
     @Column(nullable = false)
-    @Min(5)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Role role; // CUSTOMER, ADMIN
+//    @Enumerated(EnumType.STRING)
+//    private Role role; // CUSTOMER, ADMIN
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -40,11 +39,11 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    public User(String email, String fullName, String password, Role role) {
+    public User(String email, String fullName, String password/*, Role role8*/) {
         this.email = email;
         this.fullName = fullName;
         this.password = password;
-        this.role = role;
+        //this.role = role;
     }
 
     @Override
@@ -87,13 +86,12 @@ public class User implements UserDetails {
     public void setId(Long id) {
         this.id = id;
     }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getFullName() {
@@ -112,13 +110,13 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
+//    public Role getRole() {
+//        return role;
+//    }
+//
+//    public void setRole(Role role) {
+//        this.role = role;
+//    }
 
     public Date getCreatedAt() {
         return createdAt;

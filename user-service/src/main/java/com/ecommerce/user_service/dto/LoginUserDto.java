@@ -1,7 +1,8 @@
 package com.ecommerce.user_service.dto;
 
-public class AuthRequest {
+public class LoginUserDto {
     private String email;
+
     private String password;
 
     public String getEmail() {
@@ -19,5 +20,6 @@ public class AuthRequest {
     public void setPassword(String password) {
         this.password = password;
     }
-    // Getters and setters
+
+    // getters and setters here...
 }
