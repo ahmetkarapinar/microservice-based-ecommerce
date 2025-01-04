@@ -64,7 +64,7 @@ public class AuthenticationService {
     private String generateToken(UserEntity userEntity, Authentication authentication, long expiryDuration){
         Instant now = Instant.now();
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-                .issuer("Ornate")
+                .issuer("Karapinar")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiryDuration))
                 .subject(authentication.getName())
