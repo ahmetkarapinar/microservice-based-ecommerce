@@ -1,50 +1,81 @@
 package com.ecommerce.user_service.services;
 
 import com.ecommerce.user_service.dto.LoginUserDto;
-import com.ecommerce.user_service.dto.RegisterUserDto;
-import com.ecommerce.user_service.entities.User;
+import com.ecommerce.user_service.entities.UserEntity;
 import com.ecommerce.user_service.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 public class AuthenticationService {
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    AuthenticationManager authenticationManager;
 
-    private final AuthenticationManager authenticationManager;
+    @Autowired
+    JwtEncoder jwtEncoder;
 
-    public AuthenticationService(
-            UserRepository userRepository,
-            AuthenticationManager authenticationManager,
-            PasswordEncoder passwordEncoder
-    ) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public String register(UserEntity user){
+        Optional<UserEntity> userEntity = userRepository.findByEmail(user.getEmail());
+        if (userEntity.isPresent()){
+            return "Username already taken";
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("ROLE_USER");
+        userRepository.save(user);
+
+        return "User Registered successfully";
     }
 
-    public User signup(RegisterUserDto input) {
-        User user = new User();
-        user.setFullName(input.getFullName());
-        user.setEmail(input.getEmail());
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
+    public Map<String, Object> login(LoginUserDto user) {
+        Optional<UserEntity> userEntity = userRepository.findByEmail(user.getEmail());
+        Map<String, Object> response = new HashMap<>();
 
-        return userRepository.save(user);
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+        if (!userEntity.isPresent()){
+            response.put("status", "User Not Found");
+            return response;
+        }
+        String accessToken = generateToken(userEntity.get(), authentication, 3600);
+        response.put("access_token", accessToken);
+        response.put("expires_in", 3600);
+        return response;
     }
 
-    public User authenticate(LoginUserDto input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
-        );
+    private String generateToken(UserEntity userEntity, Authentication authentication, long expiryDuration){
+        Instant now = Instant.now();
+        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+                .issuer("Ornate")
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(expiryDuration))
+                .subject(authentication.getName())
+                .claim("role", authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toSet()))
+                .claim("email", userEntity.getEmail())
+                .claim("userId", userEntity.getId())
+                .build();
 
-        return userRepository.findByEmail(input.getEmail())
-                .orElseThrow();
+        return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
+
     }
 }

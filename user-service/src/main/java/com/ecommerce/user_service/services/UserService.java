@@ -1,6 +1,6 @@
 package com.ecommerce.user_service.services;
 
-import com.ecommerce.user_service.entities.User;
+import com.ecommerce.user_service.entities.UserEntity;
 import com.ecommerce.user_service.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,11 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> allUsers() {
-        List<User> users = new ArrayList<>();
+    public List<UserEntity> allUsers() {
+        List<UserEntity> userEntities = new ArrayList<>();
 
-        userRepository.findAll().forEach(users::add);
+        userRepository.findAll().forEach(userEntities::add);
 
-        return users;
+        return userEntities;
     }
 }

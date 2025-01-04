@@ -1,12 +1,9 @@
 package com.ecommerce.user_service.entities;
 
-import io.micrometer.common.KeyValue;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Date;
@@ -14,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,8 +25,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-//    @Enumerated(EnumType.STRING)
-//    private Role role; // CUSTOMER, ADMIN
+    @Column(nullable = false)
+    private String address;
+
+    private String role; // CUSTOMER, ADMIN
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -39,44 +38,16 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    public User(String email, String fullName, String password/*, Role role8*/) {
+
+    public UserEntity() {
+    }
+
+    public UserEntity(String email, String fullName, String password, String address, String role) {
         this.email = email;
         this.fullName = fullName;
         this.password = password;
-        //this.role = role;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public User() {
+        this.address = address;
+        this.role = role;
     }
 
     public Long getId() {
@@ -110,14 +81,6 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-//    public Role getRole() {
-//        return role;
-//    }
-//
-//    public void setRole(Role role) {
-//        this.role = role;
-//    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -132,6 +95,22 @@ public class User implements UserDetails {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
 

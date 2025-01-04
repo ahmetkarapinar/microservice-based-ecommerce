@@ -1,6 +1,6 @@
 package com.ecommerce.user_service.controllers;
 
-import com.ecommerce.user_service.entities.User;
+import com.ecommerce.user_service.entities.UserEntity;
 import com.ecommerce.user_service.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RestController
 public class UserController {
     private final UserService userService;
@@ -23,20 +22,20 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> authenticatedUser() {
+    public ResponseEntity<UserEntity> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            User currentUser = (User) authentication.getPrincipal();
-            if (currentUser == null) {
+            UserEntity currentUserEntity = (UserEntity) authentication.getPrincipal();
+            if (currentUserEntity == null) {
                 throw new UsernameNotFoundException("Not authenticated");
             }
-            return ResponseEntity.ok(currentUser);
+            return ResponseEntity.ok(currentUserEntity);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<User>> allUsers() {
-        List <User> users = userService.allUsers();
+    public ResponseEntity<List<UserEntity>> allUsers() {
+        List <UserEntity> userEntities = userService.allUsers();
 
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userEntities);
     }
 }

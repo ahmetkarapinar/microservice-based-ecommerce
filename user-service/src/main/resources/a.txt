@@ -1,4 +1,4 @@
-spring.application.name=user-service
+spring.application.name=userEntity-service
 server.port=8000
 logging.level.org.springframework=debug
 enableLoggingRequestDetails=true
