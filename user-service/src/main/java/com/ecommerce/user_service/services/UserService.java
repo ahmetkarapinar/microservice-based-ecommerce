@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -21,5 +22,9 @@ public class UserService {
         userRepository.findAll().forEach(userEntities::add);
 
         return userEntities;
+    }
+
+    public Optional<UserEntity> getUserById(Long id) {
+        return userRepository.findById(id);
     }
 }
