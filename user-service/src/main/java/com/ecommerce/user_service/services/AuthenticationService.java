@@ -40,7 +40,6 @@ public class AuthenticationService {
             return "Username already taken";
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole("ROLE_USER");
         userRepository.save(user);
 
         return "User Registered successfully";

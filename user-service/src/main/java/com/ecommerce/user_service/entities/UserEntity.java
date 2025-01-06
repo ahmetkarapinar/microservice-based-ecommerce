@@ -28,6 +28,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String address;
 
+    @Column(nullable = false)
     private String role; // CUSTOMER, ADMIN
 
     @CreationTimestamp
