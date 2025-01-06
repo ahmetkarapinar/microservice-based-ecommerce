@@ -42,14 +42,10 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    @GetMapping("/role")
-    public Collection<? extends GrantedAuthority> getRole() {
-        return productService.getAuthUserRole();
-    }
-
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String onlyAdmin() {
-        return "This is the admin end-point!";
+    // 4. Get All Products
+    @GetMapping
+    public ResponseEntity<List<ProductEntity>> getAllProducts() {
+        List<ProductEntity> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 }

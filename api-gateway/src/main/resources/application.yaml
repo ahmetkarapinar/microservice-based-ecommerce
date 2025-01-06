@@ -10,12 +10,19 @@ spring:
             - Path=/api/**
           filters:
             - AuthenticationPreFilter
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/**
+          filters:
+            - AuthenticationPreFilter
 
       globalcors:
         cors-configurations:
           '[/**]':
             allowedOrigins:
               - "http://localhost:8000"
+              - "http://localhost:8100"
             allowedMethods:
               - GET
               - POST

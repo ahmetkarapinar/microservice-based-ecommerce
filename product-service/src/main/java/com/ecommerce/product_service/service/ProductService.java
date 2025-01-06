@@ -64,9 +64,13 @@ public class ProductService {
         return userId;
     }
 
-    public Collection<? extends GrantedAuthority> getAuthUserRole(){
+    private Collection<? extends GrantedAuthority> getAuthUserRole(){
         Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
         System.out.println("User Role: "+ authorities);
         return authorities;
+    }
+    // Get All Products
+    public List<ProductEntity> getAllProducts() {
+        return productRepository.findAll();
     }
 }
