@@ -3,7 +3,10 @@ package com.ecommerce.order_service.controllers;
 import com.ecommerce.order_service.entities.Cart;
 import com.ecommerce.order_service.entities.Order;
 import com.ecommerce.order_service.entities.ProductDto;
+import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.services.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+
+    @Autowired
+    private ProductServiceProxy productServiceProxy;
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
@@ -45,6 +51,13 @@ public class OrderController {
             @RequestBody Double paymentAmount) {
         Order order = orderService.proceedToPayment(userId, paymentAmount);
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/{productId}/stock/{requiredQuantity}")
+    public boolean checkStock(
+            @PathVariable Long productId,
+            @PathVariable Integer requiredQuantity) {
+        return productServiceProxy.checkStockAvailability(productId, requiredQuantity);
     }
 }
 

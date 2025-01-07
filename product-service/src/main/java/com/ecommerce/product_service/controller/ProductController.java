@@ -48,4 +48,23 @@ public class ProductController {
         List<ProductEntity> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
+
+    // Check stock availability
+    @GetMapping("/{productId}/stock/{requiredQuantity}")
+    public ResponseEntity<Boolean> checkStockAvailability(
+            @PathVariable Long productId,
+            @PathVariable Integer requiredQuantity) {
+        boolean isAvailable = productService.checkStockAvailability(productId, requiredQuantity);
+        return ResponseEntity.ok(isAvailable);
+    }
+
+    // Decrease stock
+    @PutMapping("/{productId}/decrease-stock/{quantityToDeduct}")
+    public ResponseEntity<Void> decreaseStock(
+            @PathVariable Long productId,
+            @PathVariable Integer quantityToDeduct) {
+        productService.decreaseStock(productId, quantityToDeduct);
+        return ResponseEntity.noContent().build();
+    }
+
 }

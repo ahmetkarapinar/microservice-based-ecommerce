@@ -73,4 +73,25 @@ public class ProductService {
     public List<ProductEntity> getAllProducts() {
         return productRepository.findAll();
     }
+
+    // Check if sufficient stock is available for a product
+    public boolean checkStockAvailability(Long productId, Integer requiredQuantity) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+
+        return product.getQuantity() >= requiredQuantity;
+    }
+
+    // Decrease stock for a product
+    public void decreaseStock(Long productId, Integer quantityToDeduct) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+
+        if (product.getQuantity() < quantityToDeduct) {
+            throw new RuntimeException("Insufficient stock for product ID: " + productId);
+        }
+
+        product.setQuantity(product.getQuantity() - quantityToDeduct);
+        productRepository.save(product);
+    }
 }

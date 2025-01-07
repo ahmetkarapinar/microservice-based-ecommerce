@@ -18,9 +18,6 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
 
-    @Autowired
-    private ProductServiceProxy productProxy;
-
     public OrderService(CartRepository cartRepository, OrderRepository orderRepository) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
@@ -81,23 +78,23 @@ public class OrderService {
         }
 
         // Check stock availability for all items
-        for (CartItem item : cart.getItems()) {
-            boolean isStockAvailable = checkStockAvailability(item.getProductId(), item.getQuantity());
-            if (!isStockAvailable) {
-                throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
-            }
-        }
+//        for (CartItem item : cart.getItems()) {
+//            boolean isStockAvailable = productProxy.checkStockAvailability(item.getProductId(), item.getQuantity());
+//            if (!isStockAvailable) {
+//                throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
+//            }
+//        }
 
         // Process payment (assume payment success as placeholder)
-        boolean paymentSuccess = processPayment(userId, totalPrice);
-        if (!paymentSuccess) {
-            throw new RuntimeException("Payment processing failed");
-        }
-
-        // Decrease stock count for purchased items
-        for (CartItem item : cart.getItems()) {
-            decreaseStock(item.getProductId(), item.getQuantity());
-        }
+//        boolean paymentSuccess = processPayment(userId, totalPrice);
+//        if (!paymentSuccess) {
+//            throw new RuntimeException("Payment processing failed");
+//        }
+//
+//        // Decrease stock count for purchased items
+//        for (CartItem item : cart.getItems()) {
+//            decreaseStock(item.getProductId(), item.getQuantity());
+//        }
 
         // Create Order
         Order order = new Order();
