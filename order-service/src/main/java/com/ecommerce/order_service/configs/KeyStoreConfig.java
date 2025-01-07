@@ -1,4 +1,4 @@
-package com.ecommerce.product_service.configs;
+package com.ecommerce.order_service.configs;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

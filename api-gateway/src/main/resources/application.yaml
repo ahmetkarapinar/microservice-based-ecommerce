@@ -7,13 +7,13 @@ spring:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/**
+            - Path=/api/auth/**,/api/users/**
           filters:
             - AuthenticationPreFilter
         - id: product-service
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/api/**
+            - Path=/api/products/**
           filters:
             - AuthenticationPreFilter
 
