@@ -2,6 +2,7 @@ package com.ecommerce.order_service.services;
 
 import com.ecommerce.order_service.entities.Cart;
 import com.ecommerce.order_service.entities.CartItem;
+import com.ecommerce.order_service.entities.OrderStatus;
 import com.ecommerce.order_service.entities.Order;
 import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.repositories.CartRepository;
@@ -17,10 +18,13 @@ public class OrderService {
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
+    @Autowired
+    private ProductServiceProxy productServiceProxy;
 
-    public OrderService(CartRepository cartRepository, OrderRepository orderRepository) {
+    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, ProductServiceProxy productServiceProxy) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
+        this.productServiceProxy =  productServiceProxy;
     }
 
 // Add Product to Cart
@@ -63,8 +67,24 @@ public class OrderService {
         return cartRepository.save(cart);
     }
 
-    public Order proceedToPayment(Long userId, Double paymentAmount) {
-        // Retrieve the user's cart
+    // Get Order by ID
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+    }
+
+    // Update Order Status
+    public Order updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+        order.setStatus(status);
+        return orderRepository.save(order);
+    }
+
+    public Order proceedToPayment(String authToken) {
+
+        Long userId = getAuthUserId();
+        // Retrieve the user's car
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
 
@@ -72,18 +92,19 @@ public class OrderService {
         Double totalPrice = cart.getItems().stream()
                 .mapToDouble(item -> item.getQuantity() * getProductPrice(item.getProductId())) // Assume `getProductPrice` fetches price
                 .sum();
-
+        Double paymentAmount = totalPrice;
         if (!paymentAmount.equals(totalPrice)) {
             throw new RuntimeException("Payment amount does not match the total cart price");
         }
 
-        // Check stock availability for all items
-//        for (CartItem item : cart.getItems()) {
-//            boolean isStockAvailable = productProxy.checkStockAvailability(item.getProductId(), item.getQuantity());
-//            if (!isStockAvailable) {
-//                throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
-//            }
-//        }
+         //Check stock availability for all items
+        for (CartItem item : cart.getItems()) {
+            boolean isStockAvailable = productServiceProxy.checkStockAvailability(authToken, item.getProductId(), item.getQuantity());
+            System.out.println("ItemId:"+item.getProductId() +" stock: "+isStockAvailable);
+            if (!isStockAvailable) {
+                throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
+            }
+        }
 
         // Process payment (assume payment success as placeholder)
 //        boolean paymentSuccess = processPayment(userId, totalPrice);

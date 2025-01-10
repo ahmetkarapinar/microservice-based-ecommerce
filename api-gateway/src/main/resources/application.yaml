@@ -16,6 +16,12 @@ spring:
             - Path=/api/products/**
           filters:
             - AuthenticationPreFilter
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - AuthenticationPreFilter
 
       globalcors:
         cors-configurations:
@@ -37,6 +43,8 @@ logging:
   level:
     org:
       springframework: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
 server:
   port: 4000
 

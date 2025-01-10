@@ -2,6 +2,7 @@ package com.ecommerce.order_service.controllers;
 
 import com.ecommerce.order_service.entities.Cart;
 import com.ecommerce.order_service.entities.Order;
+import com.ecommerce.order_service.entities.OrderStatus;
 import com.ecommerce.order_service.entities.ProductDto;
 import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.services.OrderService;
@@ -43,21 +44,37 @@ public class OrderController {
         Cart cart = orderService.removeProductFromCart(productId);
         return ResponseEntity.ok(cart);
     }
+    // Get Order by ID
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    // Update Order Status
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status) {
+        Order updatedOrder = orderService.updateOrderStatus(orderId, status);
+        return ResponseEntity.ok(updatedOrder);
+    }
 
     // Proceed to Payment
     @PostMapping("/payment")
     public ResponseEntity<Order> proceedToPayment(
-            @RequestBody Long userId,
-            @RequestBody Double paymentAmount) {
-        Order order = orderService.proceedToPayment(userId, paymentAmount);
+            @RequestHeader("Authorization") String authToken){
+
+        Order order = orderService.proceedToPayment(authToken);
         return ResponseEntity.ok(order);
     }
 
     @GetMapping("/{productId}/stock/{requiredQuantity}")
     public boolean checkStock(
+            @RequestHeader("Authorization") String authToken,
             @PathVariable Long productId,
             @PathVariable Integer requiredQuantity) {
-        return productServiceProxy.checkStockAvailability(productId, requiredQuantity);
+        return productServiceProxy.checkStockAvailability(authToken,productId, requiredQuantity);
     }
 }
 

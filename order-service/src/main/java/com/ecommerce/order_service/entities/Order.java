@@ -19,6 +19,10 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<CartItem> items;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status = OrderStatus.IN_PROGRESS; // Default status
+
     @Column(nullable = false)
     private Double totalPrice;
 
@@ -52,6 +56,14 @@ public class Order {
 
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 }
 
