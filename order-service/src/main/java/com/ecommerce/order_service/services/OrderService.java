@@ -1,9 +1,6 @@
 package com.ecommerce.order_service.services;
 
-import com.ecommerce.order_service.entities.Cart;
-import com.ecommerce.order_service.entities.CartItem;
-import com.ecommerce.order_service.entities.OrderStatus;
-import com.ecommerce.order_service.entities.Order;
+import com.ecommerce.order_service.entities.*;
 import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderRepository;
@@ -25,10 +22,14 @@ public class OrderService {
     @Autowired
     private ProductServiceProxy productServiceProxy;
 
-    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, ProductServiceProxy productServiceProxy) {
+    @Autowired
+    private MessageProducer messageProducer;
+
+    public OrderService(CartRepository cartRepository, OrderRepository orderRepository, ProductServiceProxy productServiceProxy, MessageProducer messageProducer) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productServiceProxy =  productServiceProxy;
+        this.messageProducer = messageProducer;
     }
 
     // Get Cart for a User
@@ -115,15 +116,15 @@ public class OrderService {
             }
         }
         // Process payment (assume payment success as placeholder)
-//        boolean paymentSuccess = processPayment(userId, totalPrice);
-//        if (!paymentSuccess) {
-//            throw new RuntimeException("Payment processing failed");
-//        }
-//
+        boolean paymentSuccess = processMockPayment(userId, BigDecimal.valueOf(totalPrice));
+        if (!paymentSuccess) {
+            throw new RuntimeException("Payment processing failed");
+        }
+
 //        // Decrease stock count for purchased items
-//        for (CartItem item : cart.getItems()) {
-//            decreaseStock(item.getProductId(), item.getQuantity());
-//        }
+        for (CartItem item : cart.getItems()) {
+            decreaseStock(authToken, item.getProductId(), item.getQuantity());
+        }
 
         // Create Order
         Order order = new Order();
@@ -133,11 +134,22 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        // Send a notification that payment is successful and order details.
+        String userEmail = getAuthUserEmail();
+        NotificationMessage notificationMessage = new NotificationMessage(
+                userEmail,
+                "Your order has been successfully processed. Order ID: " + order.getId()
+        );
+        messageProducer.sendNotification(notificationMessage);
         // Clear the cart
         cart.getItems().clear();
         cartRepository.save(cart);
 
         return savedOrder;
+    }
+
+    public void decreaseStock(String authToken, Long productId, Integer quantity) {
+        productServiceProxy.decreaseStock(authToken, productId, quantity);
     }
 
 
@@ -152,4 +164,20 @@ public class OrderService {
         System.out.println("UserId: "+ userId);
         return userId;
     }
+    public String getAuthUserEmail(){
+        String email =  (String)SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        System.out.println("Email: "+ email);
+        return email;
+    }
+    private boolean processMockPayment(Long userId, BigDecimal totalPrice) {
+        // Simulate a random payment success or failure
+        boolean paymentSuccess = Math.random() > 0.2; // 80% success rate
+        if (paymentSuccess) {
+            System.out.println("Mock payment successful for user ID: " + userId + " with amount: " + totalPrice);
+        } else {
+            System.out.println("Mock payment failed for user ID: " + userId);
+        }
+        return paymentSuccess;
+    }
+
 }

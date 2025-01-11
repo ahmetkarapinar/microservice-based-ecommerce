@@ -1,15 +1,6 @@
 spring:
   application:
-    name: order-service
-  cache:
-    type: redis      # Enable Redis caching
-    redis:
-      time-to-live: 3600000 # Cache expiration time in milliseconds (1 hour)
-
-  redis:
-    host: localhost # Redis host
-    port: 6379       # Redis port
-
+    name: notification-service
   rabbitmq:
     host: localhost
     port: 5672
@@ -46,7 +37,7 @@ keyStore:
 server:
   servlet:
     context-path: /api
-  port: 8200
+  port: 8300
 
 logging:
   level:

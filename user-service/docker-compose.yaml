@@ -43,7 +43,15 @@ services:
       - redis
     networks:
       - app-network
-
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq-container
+    ports:
+      - "5672:5672" # RabbitMQ messaging port
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
 networks:
   app-network: # Define the custom network
     driver: bridge

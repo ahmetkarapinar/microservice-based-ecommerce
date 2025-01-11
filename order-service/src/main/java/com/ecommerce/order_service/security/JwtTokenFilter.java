@@ -50,9 +50,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         .collect(Collectors.toList());
 
                 Long userId = claims.get("userId", Long.class);
-
-
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                String email = claims.get("email", String.class);
+                System.out.println("USER EMAIL: "+ email);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId, email, authorities);
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);

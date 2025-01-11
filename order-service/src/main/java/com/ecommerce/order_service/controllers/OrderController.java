@@ -87,6 +87,10 @@ public class OrderController {
         Double price = orderService.getProductPrice(authToken, id);
         return ResponseEntity.ok(price);
     }
+    @GetMapping("/email")
+    public Object getEmail() {
+        return orderService.getAuthUserEmail();
+    }
 
     @GetMapping("/{productId}/stock/{requiredQuantity}")
     public boolean checkStock(
