@@ -1,6 +1,13 @@
 spring:
   application:
     name: order-service
+  cache:
+    type: redis      # Enable Redis caching
+    redis:
+      time-to-live: 3600000 # Cache expiration time in milliseconds (1 hour)
+  redis:
+    host: localhost # Redis host
+    port: 6379       # Redis port
   datasource:
     url: jdbc:postgresql://localhost:5432/userdb
     username: myuser
@@ -41,7 +48,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "metrics"
+
   endpoint:
     prometheus:
       enabled: true

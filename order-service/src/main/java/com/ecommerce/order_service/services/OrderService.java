@@ -8,12 +8,16 @@ import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 @Service
+@EnableCaching
 public class OrderService {
 
     private final CartRepository cartRepository;
@@ -25,6 +29,13 @@ public class OrderService {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productServiceProxy =  productServiceProxy;
+    }
+
+    // Get Cart for a User
+    public Cart getCartByUserId() {
+        Long userId = getAuthUserId();
+        return cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cart not found for user ID: " + userId));
     }
 
 // Add Product to Cart
@@ -90,12 +101,10 @@ public class OrderService {
 
         // Calculate total price
         Double totalPrice = cart.getItems().stream()
-                .mapToDouble(item -> item.getQuantity() * getProductPrice(item.getProductId())) // Assume `getProductPrice` fetches price
+                .mapToDouble(item -> item.getQuantity() * getProductPrice(authToken, item.getProductId())) // Assume `getProductPrice` fetches price
                 .sum();
-        Double paymentAmount = totalPrice;
-        if (!paymentAmount.equals(totalPrice)) {
-            throw new RuntimeException("Payment amount does not match the total cart price");
-        }
+        System.out.println("TOTAL PRICE: "+totalPrice);
+
 
          //Check stock availability for all items
         for (CartItem item : cart.getItems()) {
@@ -105,7 +114,6 @@ public class OrderService {
                 throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
             }
         }
-
         // Process payment (assume payment success as placeholder)
 //        boolean paymentSuccess = processPayment(userId, totalPrice);
 //        if (!paymentSuccess) {
@@ -132,9 +140,11 @@ public class OrderService {
         return savedOrder;
     }
 
-    // Example method to get product price (to be replaced with Product Service integration)
-    private Double getProductPrice(Long productId) {
-        return 100.0; // Placeholder price
+
+    @Cacheable(value = "productPrices", key = "#productId")
+    public Double getProductPrice(String authToken, Long productId) {
+        Double price = productServiceProxy.getProductPrice(authToken, productId).doubleValue();
+        return price;
     }
 
     private Long getAuthUserId(){

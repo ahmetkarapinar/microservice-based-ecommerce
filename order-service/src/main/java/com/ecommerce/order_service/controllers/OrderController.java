@@ -9,6 +9,7 @@ import com.ecommerce.order_service.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,14 @@ public class OrderController {
         Cart cart = orderService.addProductToCart(product.getProductId(), product.getQuantity());
         return ResponseEntity.ok(cart);
     }
+
+    // Get Cart for a User
+    @GetMapping("/cart")
+    public ResponseEntity<Cart> getCartByUserId() {
+        Cart cart = orderService.getCartByUserId();
+        return ResponseEntity.ok(cart);
+    }
+
     @GetMapping
     public String hello() {
         return "Hello World!";
@@ -52,6 +61,7 @@ public class OrderController {
     }
 
     // Update Order Status
+    @PreAuthorize("hasRole('ADMIN')") // Restrict this endpoint to admins
     @PutMapping("/{orderId}/status")
     public ResponseEntity<Order> updateOrderStatus(
             @PathVariable Long orderId,
@@ -67,6 +77,15 @@ public class OrderController {
 
         Order order = orderService.proceedToPayment(authToken);
         return ResponseEntity.ok(order);
+    }
+
+    // Get Price
+    @GetMapping("/product/{id}/price")
+    public ResponseEntity<Double> getPrice(
+            @RequestHeader("Authorization") String authToken,
+            @PathVariable Long id){
+        Double price = orderService.getProductPrice(authToken, id);
+        return ResponseEntity.ok(price);
     }
 
     @GetMapping("/{productId}/stock/{requiredQuantity}")

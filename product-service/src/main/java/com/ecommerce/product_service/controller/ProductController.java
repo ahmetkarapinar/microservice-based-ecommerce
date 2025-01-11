@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    // 1. Add Product (Admin Only)
+    // Add Product (Admin Only)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')") // Restrict this endpoint to admins
     public ResponseEntity<ProductEntity> addProduct(@RequestBody ProductEntity product) {
@@ -28,21 +29,38 @@ public class ProductController {
         return ResponseEntity.ok(savedProduct);
     }
 
-    // 2. Get Product by Category
+    // Get Product by Category
     @GetMapping("/category/{category}")
     public ResponseEntity<List<ProductEntity>> getProductsByCategory(@PathVariable String category) {
         List<ProductEntity> products = productService.getProductsByCategory(category);
         return ResponseEntity.ok(products);
     }
 
-    // 3. Get Product by ID
+    // Get Product by ID
     @GetMapping("/{id}")
     public ResponseEntity<ProductEntity> getProductById(@PathVariable Long id) {
         ProductEntity product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
 
-    // 4. Get All Products
+    // Get Product Price
+    @GetMapping("/{id}/price")
+    public ResponseEntity<BigDecimal> getProductPrice(@PathVariable Long id) {
+        BigDecimal price = productService.getProductPrice(id);
+        return ResponseEntity.ok(price);
+    }
+
+    // Update Product Price
+    @PreAuthorize("hasRole('ADMIN')") // Restrict this endpoint to admins
+    @PutMapping("/{productId}/price")
+    public ResponseEntity<Double> updateProductPrice(
+            @PathVariable Long productId,
+            @RequestParam  Double price) {
+        Double newPrice = productService.updateProductPrice(productId, price);
+        return ResponseEntity.ok(newPrice);
+    }
+
+    // Get All Products
     @GetMapping
     public ResponseEntity<List<ProductEntity>> getAllProducts() {
         List<ProductEntity> products = productService.getAllProducts();

@@ -4,6 +4,10 @@ import com.ecommerce.product_service.exceptions.InvalidProductException;
 import com.ecommerce.product_service.exceptions.ProductNotFoundException;
 import com.ecommerce.product_service.model.ProductEntity;
 import com.ecommerce.product_service.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@EnableCaching
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -40,6 +45,27 @@ public class ProductService {
     public ProductEntity getProductById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
+    }
+    // Get Product Price by ID
+    public BigDecimal getProductPrice(Long productId) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
+        return product.getPrice();
+    }
+
+    // Update Product Price
+    @CachePut(value = "productPrices", key = "#productId")
+    public Double updateProductPrice(Long productId, Double newPrice) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
+
+        if (newPrice == null || newPrice <= 0) {
+            throw new RuntimeException("Invalid price: Price must be greater than 0");
+        }
+
+        product.setPrice(BigDecimal.valueOf(newPrice));
+        productRepository.save(product);
+        return newPrice;
     }
 
     // Validate Product Input
