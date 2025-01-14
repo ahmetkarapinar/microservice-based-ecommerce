@@ -1,6 +1,8 @@
 package com.ecommerce.order_service.services;
 
 import com.ecommerce.order_service.entities.*;
+import com.ecommerce.order_service.exceptions.CartNotFoundException;
+import com.ecommerce.order_service.exceptions.*;
 import com.ecommerce.order_service.proxy.ProductServiceProxy;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderRepository;
@@ -36,7 +38,7 @@ public class OrderService {
     public Cart getCartByUserId() {
         Long userId = getAuthUserId();
         return cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found for user ID: " + userId));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user ID: " + userId));
     }
 
 // Add Product to Cart
@@ -73,22 +75,25 @@ public class OrderService {
     public Cart removeProductFromCart(Long productId) {
         Long userId = getAuthUserId();
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + userId));
 
-        cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+        boolean removed = cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+        if (!removed) {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found in cart.");
+        }
         return cartRepository.save(cart);
     }
 
     // Get Order by ID
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
     }
 
     // Update Order Status
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
         order.setStatus(status);
         return orderRepository.save(order);
     }
@@ -98,7 +103,7 @@ public class OrderService {
         Long userId = getAuthUserId();
         // Retrieve the user's car
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + userId));
 
         // Calculate total price
         Double totalPrice = cart.getItems().stream()
@@ -112,16 +117,16 @@ public class OrderService {
             boolean isStockAvailable = productServiceProxy.checkStockAvailability(authToken, item.getProductId(), item.getQuantity());
             System.out.println("ItemId:"+item.getProductId() +" stock: "+isStockAvailable);
             if (!isStockAvailable) {
-                throw new RuntimeException("Insufficient stock for product ID: " + item.getProductId());
+                throw new StockUnavailableException("Insufficient stock for product ID: " + item.getProductId());
             }
         }
         // Process payment (assume payment success as placeholder)
         boolean paymentSuccess = processMockPayment(userId, BigDecimal.valueOf(totalPrice));
         if (!paymentSuccess) {
-            throw new RuntimeException("Payment processing failed");
+            throw new PaymentFailedException("Payment processing failed for user ID: " + userId);
         }
 
-//        // Decrease stock count for purchased items
+       // Decrease stock count for purchased items
         for (CartItem item : cart.getItems()) {
             decreaseStock(authToken, item.getProductId(), item.getQuantity());
         }
@@ -169,7 +174,7 @@ public class OrderService {
         System.out.println("Email: "+ email);
         return email;
     }
-    private boolean processMockPayment(Long userId, BigDecimal totalPrice) {
+    public boolean processMockPayment(Long userId, BigDecimal totalPrice) {
         // Simulate a random payment success or failure
         boolean paymentSuccess = Math.random() > 0.2; // 80% success rate
         if (paymentSuccess) {
