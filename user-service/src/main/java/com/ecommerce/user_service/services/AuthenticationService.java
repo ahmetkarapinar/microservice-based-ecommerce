@@ -55,7 +55,7 @@ public class AuthenticationService {
         if (!userEntity.isPresent()){
             throw new UserNotFoundException("User with email " + user.getEmail() + " not found.");
         }
-        String accessToken = generateToken(userEntity.get(), authentication, 3600);
+        String accessToken = generateToken(userEntity.get(), authentication, 36000);
         response.put("access_token", accessToken);
         response.put("expires_in", 36000);
         return response;
