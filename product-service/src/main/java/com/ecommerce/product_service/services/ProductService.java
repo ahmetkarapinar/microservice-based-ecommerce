@@ -4,6 +4,7 @@ import com.ecommerce.product_service.exceptions.InvalidProductException;
 import com.ecommerce.product_service.exceptions.ProductNotFoundException;
 import com.ecommerce.product_service.entities.ProductEntity;
 import com.ecommerce.product_service.repositories.ProductRepository;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.EnableCaching;
@@ -40,6 +41,7 @@ public class ProductService {
     }
 
     // Get Product by ID
+    @RateLimiter(name = "productServiceRateLimiter", fallbackMethod = "rateLimiterFallback")
     public ProductEntity getProductById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
@@ -85,7 +87,7 @@ public class ProductService {
     // Check if sufficient stock is available for a product
     public boolean checkStockAvailability(Long productId, Integer requiredQuantity) {
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
         return product.getQuantity() >= requiredQuantity;
     }
@@ -93,7 +95,7 @@ public class ProductService {
     // Decrease stock for a product
     public void decreaseStock(Long productId, Integer quantityToDeduct) {
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
         if (product.getQuantity() < quantityToDeduct) {
             throw new RuntimeException("Insufficient stock for product ID: " + productId);
@@ -101,5 +103,8 @@ public class ProductService {
 
         product.setQuantity(product.getQuantity() - quantityToDeduct);
         productRepository.save(product);
+    }
+    public ProductEntity rateLimiterFallback(Long id, Throwable t) {
+        throw new RuntimeException("Rate limit exceeded. Unable to fetch product. Please try again later.");
     }
 }

@@ -51,3 +51,10 @@ management:
     export:
       prometheus:
         enable: true
+resilience4j:
+  ratelimiter:
+    instances:
+      productServiceRateLimiter:
+        limit-for-period: 10 # Maximum 10 requests
+        limit-refresh-period: 1m # Reset limit every minute
+        timeout-duration: 0 # Immediate failure if limit is exceeded
