@@ -2,13 +2,13 @@ spring:
   application:
     name: notification-service
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: admin
     password: admin
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/userdb
+    url: jdbc:postgresql://postgres:5432/userdb
     username: myuser
     password: mypassword
     driver-class-name: org.postgresql.Driver

@@ -1,23 +1,22 @@
 spring:
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # Cache expiration time (1 hour)
+  data:
+    redis:
+      host: redis
+      port: 6379
   application:
     name: order-service
-  cache:
-    type: redis      # Enable Redis caching
-    redis:
-      time-to-live: 3600000 # Cache expiration time in milliseconds (1 hour)
-
-  redis:
-    host: localhost # Redis host
-    port: 6379       # Redis port
-
   rabbitmq:
-    host: localhost
+    host: rabbitmq
     port: 5672
     username: admin
     password: admin
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/userdb
+    url: jdbc:postgresql://postgres:5432/userdb
     username: myuser
     password: mypassword
     driver-class-name: org.postgresql.Driver

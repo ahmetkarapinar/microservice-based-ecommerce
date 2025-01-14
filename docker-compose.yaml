@@ -1,5 +1,95 @@
 version: '3.8'
+
+networks:
+  karapinar-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
 services:
+  naming-server:
+    image: ahmetkarapinar/ms-naming-server:0.0.1-SNAPSHOT
+    container_name: naming-server-container
+    ports:
+      - "8761:8761"
+    networks:
+      - karapinar-network
+
+  api-gateway:
+    image: ahmetkarapinar/ms-api-gateway:0.0.1-SNAPSHOT
+    container_name: api-gateway-container
+    ports:
+      - "4000:4000"
+    depends_on:
+      - naming-server
+    networks:
+      - karapinar-network
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+
+  user-service:
+    image: ahmetkarapinar/ms-user-service:0.0.1-SNAPSHOT
+    container_name: user-service-container
+    ports:
+      - "8000:8000"
+    depends_on:
+      - naming-server
+      - postgres
+    networks:
+      - karapinar-network
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+
+  product-service:
+    image: ahmetkarapinar/ms-product-service:0.0.1-SNAPSHOT
+    container_name: product-service-container
+    ports:
+      - "8100:8100"
+    depends_on:
+      - naming-server
+      - postgres
+      - rabbitmq
+      - redis
+    networks:
+      - karapinar-network
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+  order-service:
+    image: ahmetkarapinar/ms-order-service:0.0.1-SNAPSHOT
+    container_name: order-service-container
+    ports:
+      - "8200:8200"
+    depends_on:
+      - naming-server
+      - product-service
+      - postgres
+      - rabbitmq
+      - redis
+    networks:
+      - karapinar-network
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+  notification-service:
+    image: ahmetkarapinar/ms-notification-service:0.0.1-SNAPSHOT
+    container_name: notification-service-container
+    ports:
+      - "8300:8300"
+    depends_on:
+      - naming-server
+      - postgres
+      - rabbitmq
+    networks:
+      - karapinar-network
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+
   postgres:
     image: postgres:latest
     container_name: postgres-container
@@ -10,7 +100,8 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - app-network
+      - karapinar-network
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin-container
@@ -18,44 +109,44 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80" # Expose pgAdmin on port 5050
+      - "5050:80"
     depends_on:
       - postgres
     networks:
-      - app-network
+      - karapinar-network
+
   redis:
     image: redis:latest
     container_name: redis-container
     ports:
-      - "6379:6379" # Expose Redis on default port 6379
+      - "6379:6379"
     networks:
-      - app-network
+      - karapinar-network
     volumes:
-      - redis-data:/data # Persist Redis data
+      - redis-data:/data
+
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis-commander
     environment:
-      REDIS_HOSTS: redis-container # Specify Redis container name
+      REDIS_HOSTS: redis-container
     ports:
-      - "8081:8081" # Expose Redis Commander on port 8081
+      - "8081:8081"
     depends_on:
       - redis
     networks:
-      - app-network
+      - karapinar-network
+
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq-container
     ports:
-      - "5672:5672" # RabbitMQ messaging port
-      - "15672:15672" # RabbitMQ management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
-networks:
-  app-network: # Define the custom network
-    driver: bridge
+    networks:
+      - karapinar-network
 
-volumes:
-  redis-data: # Define the volume for Redis persistence
-    driver: local
+

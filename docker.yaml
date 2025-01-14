@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: userdb
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80" # Expose pgAdmin on port 5050
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379" # Expose Redis on default port 6379
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data # Persist Redis data
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    environment:
+      REDIS_HOSTS: redis-container # Specify Redis container name
+    ports:
+      - "8081:8081" # Expose Redis Commander on port 8081
+    depends_on:
+      - redis
+    networks:
+      - app-network
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq-container
+    ports:
+      - "5672:5672" # RabbitMQ messaging port
+      - "15672:15672" # RabbitMQ management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+networks:
+  app-network: # Define the custom network
+    driver: bridge
+
+volumes:
+  redis-data: # Define the volume for Redis persistence
+    driver: local

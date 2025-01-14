@@ -3,13 +3,14 @@ spring:
     type: redis
     redis:
       time-to-live: 3600000 # Cache expiration time (1 hour)
-  redis:
-    host: localhost
-    port: 6379
+  data:
+    redis:
+      host: redis
+      port: 6379
   application:
     name: product-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/userdb
+    url: jdbc:postgresql://postgres:5432/userdb
     username: myuser
     password: mypassword
     driver-class-name: org.postgresql.Driver
@@ -34,6 +35,7 @@ server:
   servlet:
     context-path: /api
   port: 8100
+  address: 0.0.0.0
 
 logging:
   level:
