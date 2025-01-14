@@ -30,6 +30,7 @@ public class UserEntity {
     private String fullName;
 
     @Column(nullable = false)
+    @Size(min = 8, message = "Password must be at least 8 characters long.")
     private String password;
 
     @Column(nullable = false)

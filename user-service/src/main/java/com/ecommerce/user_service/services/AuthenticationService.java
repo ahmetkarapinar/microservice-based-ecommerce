@@ -5,6 +5,7 @@ import com.ecommerce.user_service.entities.UserEntity;
 import com.ecommerce.user_service.exceptions.UserAlreadyExistsException;
 import com.ecommerce.user_service.exceptions.UserNotFoundException;
 import com.ecommerce.user_service.repositories.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +37,7 @@ public class AuthenticationService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String register(UserEntity user){
+    public String register(@Valid UserEntity user){
         Optional<UserEntity> userEntity = userRepository.findByEmail(user.getEmail());
         if (userEntity.isPresent()){
             throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists.");
