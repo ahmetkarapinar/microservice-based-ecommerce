@@ -1,12 +1,11 @@
-package com.ecommerce.product_service.service;
+package com.ecommerce.product_service.services;
 
 import com.ecommerce.product_service.exceptions.InvalidProductException;
 import com.ecommerce.product_service.exceptions.ProductNotFoundException;
-import com.ecommerce.product_service.model.ProductEntity;
-import com.ecommerce.product_service.repository.ProductRepository;
-import org.springframework.cache.annotation.CacheEvict;
+import com.ecommerce.product_service.entities.ProductEntity;
+import com.ecommerce.product_service.repositories.ProductRepository;
+import jakarta.validation.Valid;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,8 +26,7 @@ public class ProductService {
     }
 
     // Add Product
-    public ProductEntity addProduct(ProductEntity product) {
-        validateProduct(product); // Validate input
+    public ProductEntity addProduct(@Valid ProductEntity product) {
         return productRepository.save(product);
     }
 
@@ -66,22 +64,6 @@ public class ProductService {
         product.setPrice(BigDecimal.valueOf(newPrice));
         productRepository.save(product);
         return newPrice;
-    }
-
-    // Validate Product Input
-    private void validateProduct(ProductEntity product) {
-        if (product.getName() == null || product.getName().isEmpty()) {
-            throw new InvalidProductException("Product name cannot be empty");
-        }
-        if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidProductException("Product price must be greater than zero");
-        }
-        if (product.getQuantity() == null || product.getQuantity() < 0) {
-            throw new InvalidProductException("Product quantity cannot be negative");
-        }
-        if (product.getCategory() == null || product.getCategory().isEmpty()) {
-            throw new InvalidProductException("Product category cannot be empty");
-        }
     }
 
     private Long getAuthUserId(){

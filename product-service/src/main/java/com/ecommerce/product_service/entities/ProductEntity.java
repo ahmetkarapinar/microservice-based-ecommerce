@@ -1,7 +1,7 @@
-package com.ecommerce.product_service.model;
+package com.ecommerce.product_service.entities;
 
 import jakarta.persistence.*;
-
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 @Entity
@@ -13,18 +13,26 @@ public class ProductEntity {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Product name is required.")
+    @Size(max = 100, message = "Product name must not exceed 100 characters.")
     private String name;
 
     @Column(length = 100)
+    @Size(max = 255, message = "Description must not exceed 255 characters.")
     private String description;
 
     @Column(nullable = false)
+    @NotNull(message = "Price is required.")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0.")
     private BigDecimal price;
 
     @Column(nullable = false)
+    @NotNull(message = "Quantity is required.")
+    @Min(value = 0, message = "Quantity cannot be negative.")
     private Integer quantity; // Stock quantity
 
     @Column(nullable = false)
+    @NotBlank(message = "Category is required.")
     private String category;
 
     @Column(nullable = false)

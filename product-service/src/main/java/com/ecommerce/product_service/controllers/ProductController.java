@@ -1,14 +1,13 @@
-package com.ecommerce.product_service.controller;
+package com.ecommerce.product_service.controllers;
 
-import com.ecommerce.product_service.model.ProductEntity;
-import com.ecommerce.product_service.service.ProductService;
+import com.ecommerce.product_service.entities.ProductEntity;
+import com.ecommerce.product_service.services.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -24,7 +23,7 @@ public class ProductController {
     // Add Product (Admin Only)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')") // Restrict this endpoint to admins
-    public ResponseEntity<ProductEntity> addProduct(@RequestBody ProductEntity product) {
+    public ResponseEntity<ProductEntity> addProduct(@Valid @RequestBody ProductEntity product) {
         ProductEntity savedProduct = productService.addProduct(product);
         return ResponseEntity.ok(savedProduct);
     }
