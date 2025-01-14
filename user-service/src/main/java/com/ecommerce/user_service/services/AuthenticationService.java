@@ -2,6 +2,8 @@ package com.ecommerce.user_service.services;
 
 import com.ecommerce.user_service.dto.LoginUserDto;
 import com.ecommerce.user_service.entities.UserEntity;
+import com.ecommerce.user_service.exceptions.UserAlreadyExistsException;
+import com.ecommerce.user_service.exceptions.UserNotFoundException;
 import com.ecommerce.user_service.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -37,7 +39,7 @@ public class AuthenticationService {
     public String register(UserEntity user){
         Optional<UserEntity> userEntity = userRepository.findByEmail(user.getEmail());
         if (userEntity.isPresent()){
-            return "Username already taken";
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists.");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -51,12 +53,11 @@ public class AuthenticationService {
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
         if (!userEntity.isPresent()){
-            response.put("status", "User Not Found");
-            return response;
+            throw new UserNotFoundException("User with email " + user.getEmail() + " not found.");
         }
         String accessToken = generateToken(userEntity.get(), authentication, 3600);
         response.put("access_token", accessToken);
-        response.put("expires_in", 3600);
+        response.put("expires_in", 36000);
         return response;
     }
 

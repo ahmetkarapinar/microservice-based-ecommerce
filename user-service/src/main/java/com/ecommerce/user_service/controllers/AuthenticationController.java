@@ -4,6 +4,7 @@ package com.ecommerce.user_service.controllers;
 import com.ecommerce.user_service.dto.LoginUserDto;
 import com.ecommerce.user_service.entities.UserEntity;
 import com.ecommerce.user_service.services.AuthenticationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -19,7 +20,9 @@ public class AuthenticationController {
     private AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserEntity user){
+    public ResponseEntity<?> registerUser(
+            @Valid @RequestBody UserEntity user
+    ){
         return ResponseEntity.ok(service.register(user));
     }
     @PostMapping("/login")
